@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect, useCallback } fr
 import { useNavigate } from 'react-router-dom';
 import { generateMockTips } from '../utils/mockData';
 import { MoodType, PomodoroStatus } from '../types';
+import { aiService } from '../services/AIService';
 
 interface AppContextType {
   tabCount: number;
@@ -55,6 +56,11 @@ export const useAppContext = () => useContext(AppContext);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
+  
+  // Initialize AI Service
+  useEffect(() => {
+    aiService.initialize().catch(console.error);
+  }, []);
   
   // Tab tracking
   const [tabCount, setTabCount] = useState(1);
@@ -139,10 +145,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentTip(tips[0]);
   }, []);
 
-  const generateNewTip = useCallback(() => {
-    const randomIndex = Math.floor(Math.random() * aiTips.length);
-    setCurrentTip(aiTips[randomIndex]);
-  }, [aiTips]);
+  const generateNewTip = useCallback(async () => {
+    try {
+      const context = {
+        timeOfDay: new Date().getHours(),
+        currentMood: moodHistory[moodHistory.length - 1]?.mood,
+        focusedTime,
+        breakTime,
+        distractions,
+      };
+
+      const tip = await aiService.generateProductivityTip(context);
+      setCurrentTip(tip);
+    } catch (error) {
+      // Fallback to mock tips if AI service fails
+      const tips = generateMockTips();
+      const randomIndex = Math.floor(Math.random() * tips.length);
+      setCurrentTip(tips[randomIndex]);
+    }
+  }, [moodHistory, focusedTime, breakTime, distractions]);
 
   const logMood = useCallback((mood: MoodType) => {
     setMoodHistory(prev => [...prev, { mood, timestamp: new Date() }]);
