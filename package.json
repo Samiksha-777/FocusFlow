@@ -10,10 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@intel/openvino": "^2.1.0",
+    "@opea/core": "^1.0.0",
+    "@opea/ml": "^1.0.0",
     "lucide-react": "^0.344.0",
+    "onnxruntime-web": "^1.17.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.22.2"
+    "react-router-dom": "^6.22.2",
+    "tensorflow-js": "^4.15.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
